@@ -2,8 +2,10 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-import pandas as pd
 import os
+
+import pandas as pd
+import requests
 
 # chrome_path = os.environ.get('chrome_path')
 chrome_path = '.\chromedriver'
@@ -19,7 +21,7 @@ driver.get(url)
 
 sleep(3)
 
-query = 'Dog'
+query = 'Cat'
 search_box = driver.find_element(By.CLASS_NAME, 'SearchBox__searchInput')
 search_box.send_keys(query)
 search_box.submit()
@@ -52,9 +54,25 @@ for i, element in enumerate(elements, start=1):
     }
     d_list.append(d)
 
-    sleep(1)
+    # sleep(1)
+
 
 df = pd.DataFrame(d_list)
 df.to_csv('image_urls_20230420.csv')
 
 driver.quit()
+
+IMAGE_DIR = '.\\' + query + '\\'
+if os.path.isdir(IMAGE_DIR):
+    print('Already exists')
+else:
+    os.makedirs(IMAGE_DIR)
+
+df = pd.read_csv('image_urls_20230420.csv')
+for file_name, yahoo_image_url in zip(df.filename, df.yahoo_image_url):
+    image = requests.get(yahoo_image_url)
+    with open(IMAGE_DIR + file_name + '.jpg', 'wb') as f:
+        f.write(image.content)
+    
+    sleep(1)
+    
